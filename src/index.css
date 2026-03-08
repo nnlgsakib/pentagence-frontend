@@ -1,96 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Pentagence Design System */
+    --color-bg-base: 222 33% 5%;
+    --color-bg-surface-1: 220 27% 9%;
+    --color-bg-surface-2: 222 24% 12%;
+    --color-bg-elevated: 220 22% 16%;
+    --color-border-soft: 218 22% 21%;
+    --color-border-strong: 218 24% 31%;
+    --color-text-primary: 220 50% 95%;
+    --color-text-secondary: 220 20% 73%;
+    --color-text-muted: 222 14% 57%;
+    --color-brand-primary: 207 100% 56%;
+    --color-brand-primary-hover: 207 100% 65%;
+    --color-brand-accent: 168 100% 41%;
+    --color-success: 150 68% 48%;
+    --color-warning: 33 100% 65%;
+    --color-danger: 353 100% 69%;
+    --color-info: 207 100% 67%;
+    --color-focus-ring: 207 100% 77%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Hero effects */
+    --color-hero-grid: 207 100% 56% / 0.18;
+    --color-hero-glow: 168 100% 41% / 0.24;
+    --color-hero-danger-pulse: 353 100% 69% / 0.20;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    /* Shadows */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.18);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.26);
+    --shadow-lg: 0 14px 38px rgba(0,0,0,0.34);
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Map to shadcn tokens */
+    --background: var(--color-bg-base);
+    --foreground: var(--color-text-primary);
+    --card: var(--color-bg-surface-1);
+    --card-foreground: var(--color-text-primary);
+    --popover: var(--color-bg-surface-2);
+    --popover-foreground: var(--color-text-primary);
+    --primary: var(--color-brand-primary);
+    --primary-foreground: 220 33% 5%;
+    --secondary: var(--color-bg-surface-2);
+    --secondary-foreground: var(--color-text-primary);
+    --muted: var(--color-bg-elevated);
+    --muted-foreground: var(--color-text-muted);
+    --accent: var(--color-brand-accent);
+    --accent-foreground: 220 33% 5%;
+    --destructive: var(--color-danger);
+    --destructive-foreground: var(--color-text-primary);
+    --border: var(--color-border-soft);
+    --input: var(--color-border-soft);
+    --ring: var(--color-focus-ring);
+    --radius: 0.75rem;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --sidebar-background: var(--color-bg-surface-1);
+    --sidebar-foreground: var(--color-text-secondary);
+    --sidebar-primary: var(--color-brand-primary);
+    --sidebar-primary-foreground: 220 33% 5%;
+    --sidebar-accent: var(--color-bg-elevated);
+    --sidebar-accent-foreground: var(--color-text-primary);
+    --sidebar-border: var(--color-border-soft);
+    --sidebar-ring: var(--color-focus-ring);
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Typography */
+    --font-heading: 'Space Grotesk', 'Sora', sans-serif;
+    --font-body: 'Inter', 'Manrope', sans-serif;
+    --font-mono: 'JetBrains Mono', 'IBM Plex Mono', monospace;
   }
 }
 
@@ -101,5 +80,60 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: hsl(var(--color-bg-base));
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--color-border-strong));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--color-text-muted));
+}
+
+/* Hero grid animation */
+@keyframes grid-drift {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-10px, -10px); }
+}
+@keyframes scanline {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.4); opacity: 0; }
 }
