@@ -1,10 +1,53 @@
-import { mockSessions } from "@/lib/mock-data";
+import { sessionApi, type SessionRecord } from "@/lib/api";
 import { StatusPill } from "@/components/StatusPill";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Play, Download } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+
+const FILTERS = ["all", "running", "completed", "failed", "queued", "provisioning", "finalizing", "canceled"] as const;
 
 export default function SessionsListPage() {
+  const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [selectedFilter, setSelectedFilter] = useState<(typeof FILTERS)[number]>("all");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const nextSessions = await sessionApi.list();
+        if (!cancelled) {
+          setSessions(nextSessions);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Failed to load sessions");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const filteredSessions = useMemo(() => {
+    if (selectedFilter === "all") {
+      return sessions;
+    }
+    return sessions.filter((session) => session.status === selectedFilter);
+  }, [selectedFilter, sessions]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -17,9 +60,9 @@ export default function SessionsListPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-2">
-        {["All", "Running", "Completed", "Failed", "Queued"].map((f) => (
-          <button key={f} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${f === "All" ? "bg-pen-brand/10 text-pen-brand border-pen-brand/20" : "text-pen-text-muted border-pen-border-soft hover:text-foreground hover:bg-pen-elevated/50"}`}>
-            {f}
+        {FILTERS.map((filter) => (
+          <button key={filter} onClick={() => setSelectedFilter(filter)} className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors capitalize ${selectedFilter === filter ? "bg-pen-brand/10 text-pen-brand border-pen-brand/20" : "text-pen-text-muted border-pen-border-soft hover:text-foreground hover:bg-pen-elevated/50"}`}>
+            {filter}
           </button>
         ))}
       </div>
@@ -37,7 +80,7 @@ export default function SessionsListPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-pen-border-soft">
-              {mockSessions.map((s) => (
+              {filteredSessions.map((s) => (
                 <tr key={s.id} className="hover:bg-pen-elevated/20 transition-colors">
                   <td className="px-4 py-3">
                     <Link to={`/app/sessions/${s.id}`} className="text-sm font-medium text-pen-brand hover:text-pen-brand-hover">{s.repo_ref}</Link>
@@ -47,10 +90,17 @@ export default function SessionsListPage() {
                   <td className="px-4 py-3 text-xs text-pen-text-muted font-mono">{new Date(s.created_at).toLocaleString()}</td>
                 </tr>
               ))}
+              {!loading && filteredSessions.length === 0 && (
+                <tr>
+                  <td colSpan={4} className="px-4 py-8 text-center text-sm text-pen-text-muted">No sessions found</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+      {loading && <p className="text-sm text-pen-text-muted">Loading sessions...</p>}
+      {error && <p className="text-sm text-pen-danger">{error}</p>}
     </div>
   );
 }

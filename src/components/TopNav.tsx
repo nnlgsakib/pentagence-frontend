@@ -78,12 +78,20 @@ export function TopNav() {
             </Link>
           ))}
           <div className="pt-3 border-t border-pen-border-soft flex gap-2">
-            <Button variant="ghost" size="sm" asChild className="flex-1">
-              <Link to="/auth/login">Sign In</Link>
-            </Button>
-            <Button size="sm" asChild className="flex-1">
-              <Link to="/auth/register">Get Started</Link>
-            </Button>
+            {isAuthenticated ? (
+              <Button size="sm" asChild className="flex-1">
+                <Link to="/app">Dashboard</Link>
+              </Button>
+            ) : (
+              <>
+                <Button variant="ghost" size="sm" asChild className="flex-1">
+                  <Link to="/auth/login">Sign In</Link>
+                </Button>
+                <Button size="sm" asChild className="flex-1">
+                  <Link to="/auth/register">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

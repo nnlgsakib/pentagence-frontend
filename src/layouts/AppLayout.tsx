@@ -27,7 +27,7 @@ export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { logout, role } = useAuth();
+  const { logout, role, user } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/app") return location.pathname === "/app";
@@ -100,7 +100,7 @@ export function AppLayout() {
 
       <div className="p-3 border-t border-pen-border-soft">
         <button
-          onClick={logout}
+          onClick={() => void logout()}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-pen-text-muted hover:text-pen-danger hover:bg-pen-danger/5 transition-colors"
         >
           <LogOut className="h-4 w-4 shrink-0" />
@@ -139,7 +139,7 @@ export function AppLayout() {
             </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-pen-text-muted">
-            <span className="hidden sm:inline">demo@pentagence.io</span>
+            <span className="hidden sm:inline">{user?.email || "unknown-user"}</span>
           </div>
         </header>
 

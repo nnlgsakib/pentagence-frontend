@@ -1,14 +1,40 @@
 import { StatCard } from "@/components/StatCard";
 import { StatusPill } from "@/components/StatusPill";
 import { SeverityBadge } from "@/components/SeverityBadge";
-import { mockSessions, mockFindings } from "@/lib/mock-data";
+import { mockFindings } from "@/lib/mock-data";
+import { sessionApi, type SessionRecord } from "@/lib/api";
 import { Play, AlertTriangle, Clock, Search, Activity } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { useEffect, useMemo, useState } from "react";
 
 export default function AppDashboard() {
-  const activeSessions = mockSessions.filter(s => s.status === "running" || s.status === "provisioning").length;
-  const failedRecent = mockSessions.filter(s => s.status === "failed").length;
+  const [sessions, setSessions] = useState<SessionRecord[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      try {
+        const payload = await sessionApi.list();
+        if (!cancelled) {
+          setSessions(payload);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Failed to load sessions");
+        }
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const activeSessions = useMemo(() => sessions.filter((session) => session.status === "running" || session.status === "provisioning").length, [sessions]);
+  const failedRecent = useMemo(() => sessions.filter((session) => session.status === "failed").length, [sessions]);
 
   return (
     <div className="space-y-6">
@@ -33,7 +59,7 @@ export default function AppDashboard() {
           <Link to="/app/sessions" className="text-xs text-pen-brand hover:text-pen-brand-hover">View all →</Link>
         </div>
         <div className="divide-y divide-pen-border-soft">
-          {mockSessions.slice(0, 4).map((session) => (
+          {sessions.slice(0, 4).map((session) => (
             <Link key={session.id} to={`/app/sessions/${session.id}`} className="flex items-center justify-between px-4 py-3 hover:bg-pen-elevated/30 transition-colors">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{session.repo_ref}</p>
@@ -42,6 +68,7 @@ export default function AppDashboard() {
               <StatusPill status={session.status}>{session.status}</StatusPill>
             </Link>
           ))}
+          {sessions.length === 0 && <p className="px-4 py-6 text-sm text-pen-text-muted">No sessions yet</p>}
         </div>
       </div>
 
@@ -63,6 +90,7 @@ export default function AppDashboard() {
           ))}
         </div>
       </div>
+      {error && <p className="text-sm text-pen-danger">{error}</p>}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import { RequireAuth, RequireAdmin } from "@/components/RouteGuards";
+import { RequireAuth, RequireAdmin, RequireGuest } from "@/components/RouteGuards";
 
 // Layouts
 import { PublicLayout } from "@/layouts/PublicLayout";
@@ -77,7 +77,7 @@ const App = () => (
             </Route>
 
             {/* Auth routes */}
-            <Route element={<AuthLayout />}>
+            <Route element={<RequireGuest><AuthLayout /></RequireGuest>}>
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/register" element={<RegisterPage />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />

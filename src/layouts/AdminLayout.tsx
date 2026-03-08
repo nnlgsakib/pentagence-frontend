@@ -23,7 +23,7 @@ export function AdminLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
 
   const isActive = (href: string) => {
     if (href === "/admin") return location.pathname === "/admin";
@@ -66,7 +66,7 @@ export function AdminLayout() {
       </div>
 
       <div className="p-3 border-t border-pen-border-soft">
-        <button onClick={logout} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-pen-text-muted hover:text-pen-danger hover:bg-pen-danger/5 transition-colors">
+        <button onClick={() => void logout()} className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-pen-text-muted hover:text-pen-danger hover:bg-pen-danger/5 transition-colors">
           <LogOut className="h-4 w-4 shrink-0" />
           {!collapsed && <span>Sign Out</span>}
         </button>
@@ -97,7 +97,7 @@ export function AdminLayout() {
             </button>
             <span className="text-xs font-mono text-pen-warning bg-pen-warning/10 px-2 py-0.5 rounded">ADMIN</span>
           </div>
-          <span className="text-sm text-pen-text-muted">admin@pentagence.io</span>
+          <span className="text-sm text-pen-text-muted">{user?.email || "admin"}</span>
         </header>
         <main className="flex-1 overflow-y-auto p-4 md:p-6">
           <Outlet />

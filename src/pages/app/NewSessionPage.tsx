@@ -1,19 +1,35 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { ApiError, sessionApi } from "@/lib/api";
 
 export default function NewSessionPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [repoRef, setRepoRef] = useState("");
+  const [targetUrl, setTargetUrl] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     setLoading(true);
-    setTimeout(() => {
-      navigate("/app/sessions");
-    }, 800);
+    try {
+      const created = await sessionApi.create({
+        repoRef,
+        targetUrl,
+        idempotencyKey: crypto.randomUUID(),
+      });
+      navigate(`/app/sessions/${created.id}`);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError("Failed to create session");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,12 +40,12 @@ export default function NewSessionPage() {
           <h2 className="font-heading text-sm font-semibold text-foreground">Target Configuration</h2>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Git Repository URL *</label>
-            <input type="url" required placeholder="https://github.com/org/repo" className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
+            <input type="text" value={repoRef} onChange={(e) => setRepoRef(e.target.value)} required placeholder="org/repo" className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
             <p className="text-xs text-pen-text-muted mt-1">The repository to scan (SAST)</p>
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">Live Application URL *</label>
-            <input type="url" required placeholder="https://example.com" className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
+            <input type="url" value={targetUrl} onChange={(e) => setTargetUrl(e.target.value)} required placeholder="https://example.com" className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
             <p className="text-xs text-pen-text-muted mt-1">The live endpoint to test (DAST)</p>
           </div>
         </div>
@@ -61,6 +77,7 @@ export default function NewSessionPage() {
             {loading ? "Creating..." : "Start Session"}
           </Button>
         </div>
+        {error && <p className="text-sm text-pen-danger">{error}</p>}
       </form>
     </div>
   );

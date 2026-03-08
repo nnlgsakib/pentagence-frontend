@@ -1,10 +1,68 @@
 import { useParams, Link } from "react-router-dom";
-import { mockArtifacts } from "@/lib/mock-data";
+import { sessionApi, type SessionArtifact } from "@/lib/api";
 import { ArrowLeft, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 export default function SessionArtifactsPage() {
   const { sessionId } = useParams();
+  const [artifacts, setArtifacts] = useState<SessionArtifact[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      if (!sessionId) {
+        setLoading(false);
+        setError("Session ID is required");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const payload = await sessionApi.listArtifacts(sessionId);
+        if (!cancelled) {
+          setArtifacts(payload);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Failed to load artifacts");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void load();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
+
+  const handleDownload = async (artifactId: string, displayName: string) => {
+    if (!sessionId) {
+      return;
+    }
+
+    try {
+      const blob = await sessionApi.downloadArtifact(sessionId, artifactId);
+      const href = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = href;
+      anchor.download = displayName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(href);
+    } catch {
+      setError("Artifact download failed");
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -27,20 +85,27 @@ export default function SessionArtifactsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-pen-border-soft">
-            {mockArtifacts.map((a) => (
+            {artifacts.map((a) => (
               <tr key={a.id} className="hover:bg-pen-elevated/20">
                 <td className="px-4 py-3 text-sm font-medium text-foreground">{a.display_name}</td>
                 <td className="px-4 py-3 text-xs text-pen-text-muted font-mono">{a.mime_type}</td>
                 <td className="px-4 py-3 text-xs text-pen-text-muted">{(a.size_bytes / 1024).toFixed(1)} KB</td>
                 <td className="px-4 py-3 text-xs text-pen-text-muted font-mono">{new Date(a.created_at).toLocaleString()}</td>
                 <td className="px-4 py-3">
-                  <Button variant="ghost" size="sm"><Download className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDownload(a.id, a.display_name)}><Download className="h-4 w-4" /></Button>
                 </td>
               </tr>
             ))}
+            {!loading && artifacts.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-4 py-8 text-center text-sm text-pen-text-muted">No artifacts available</td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
+      {loading && <p className="text-sm text-pen-text-muted">Loading artifacts...</p>}
+      {error && <p className="text-sm text-pen-danger">{error}</p>}
     </div>
   );
 }

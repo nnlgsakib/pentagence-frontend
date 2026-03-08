@@ -1,17 +1,65 @@
 import { useParams, Link } from "react-router-dom";
-import { mockLogEvents } from "@/lib/mock-data";
 import { ArrowLeft, Pause, Search, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { SessionLogsSocket, type LogsConnectionState, type SessionLogEvent } from "@/lib/ws-client";
 
 export default function SessionLogsPage() {
   const { sessionId } = useParams();
   const [paused, setPaused] = useState(false);
   const [search, setSearch] = useState("");
+  const [logs, setLogs] = useState<SessionLogEvent[]>([]);
+  const [connectionState, setConnectionState] = useState<LogsConnectionState>("connecting");
+  const [error, setError] = useState<string | null>(null);
+  const socketRef = useRef<SessionLogsSocket | null>(null);
+  const pausedRef = useRef(paused);
 
-  const filteredLogs = mockLogEvents.filter(l =>
-    !search || l.message.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    pausedRef.current = paused;
+  }, [paused]);
+
+  useEffect(() => {
+    if (!sessionId) {
+      setError("Session ID is required");
+      return;
+    }
+
+    const socket = new SessionLogsSocket({
+      sessionId,
+      onEvent: (event) => {
+        setLogs((previous) => {
+          if (pausedRef.current) {
+            return previous;
+          }
+
+          const next = [...previous, event];
+          return next.length > 1000 ? next.slice(next.length - 1000) : next;
+        });
+      },
+      onState: setConnectionState,
+      onError: setError,
+    });
+
+    socketRef.current = socket;
+    socket.connect();
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [sessionId]);
+
+  const filteredLogs = useMemo(
+    () => logs.filter((log) => !search || log.message.toLowerCase().includes(search.toLowerCase())),
+    [logs, search],
   );
+
+  const connectionLabel =
+    connectionState === "connected"
+      ? "Streaming"
+      : connectionState === "reconnecting"
+        ? "Reconnecting"
+        : connectionState;
 
   return (
     <div className="space-y-4">
@@ -35,6 +83,9 @@ export default function SessionLogsPage() {
         <Button variant="outline" size="sm" onClick={() => setPaused(!paused)}>
           <Pause className="h-4 w-4 mr-1" /> {paused ? "Resume" : "Pause"}
         </Button>
+        <span className={`text-xs font-medium px-2 py-1 rounded ${connectionState === "connected" ? "text-pen-success bg-pen-success/10" : "text-pen-warning bg-pen-warning/10"}`}>
+          {connectionLabel}
+        </span>
       </div>
 
       <div className="rounded-xl border border-pen-border-soft bg-pen-base overflow-hidden">
@@ -50,19 +101,21 @@ export default function SessionLogsPage() {
                 {log.level.toUpperCase()}
               </span>
               <span className="text-pen-text-secondary flex-1">{log.message}</span>
-              <button className="opacity-0 group-hover:opacity-100 text-pen-text-muted hover:text-foreground transition-opacity">
+              <button onClick={() => navigator.clipboard.writeText(log.message)} className="opacity-0 group-hover:opacity-100 text-pen-text-muted hover:text-foreground transition-opacity">
                 <Copy className="h-3 w-3" />
               </button>
             </div>
           ))}
-          {!paused && (
+          {!paused && connectionState === "connected" && (
             <div className="flex items-center gap-2 text-pen-brand mt-2">
               <span className="h-2 w-2 rounded-full bg-pen-brand animate-pulse" />
               <span>Streaming...</span>
             </div>
           )}
+          {filteredLogs.length === 0 && <p className="text-pen-text-muted">No logs yet.</p>}
         </div>
       </div>
+      {error && <p className="text-sm text-pen-danger">{error}</p>}
     </div>
   );
 }
