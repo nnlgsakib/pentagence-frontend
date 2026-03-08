@@ -1,5 +1,6 @@
 // Mock data for Pentagence
-export const mockSessions = [
+export type SessionStatus = "queued" | "provisioning" | "running" | "finalizing" | "completed" | "failed" | "canceled";
+export const mockSessions: Array<{ id: string; user_id: string; target_url: string; repo_ref: string; status: SessionStatus; created_at: string; started_at: string | null; ended_at: string | null; error_reason: string | null }> = [
   {
     id: "ff8518a3-65d1-4e94-ad59-75d2adc6fec9",
     user_id: "u-001",
