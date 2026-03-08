@@ -36,7 +36,12 @@ export default function SessionLogsPage() {
           return next.length > 1000 ? next.slice(next.length - 1000) : next;
         });
       },
-      onState: setConnectionState,
+      onState: (state) => {
+        setConnectionState(state);
+        if (state === "connected") {
+          setError(null);
+        }
+      },
       onError: setError,
     });
 

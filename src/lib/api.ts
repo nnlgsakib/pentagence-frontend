@@ -107,6 +107,31 @@ type RequestOptions = {
 
 let inflightRefresh: Promise<boolean> | null = null;
 
+function base64UrlDecode(value: string): string {
+  const normalized = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padLength = (4 - (normalized.length % 4)) % 4;
+  return atob(`${normalized}${"=".repeat(padLength)}`);
+}
+
+function isAccessTokenExpiringSoon(token: string, thresholdSeconds = 30): boolean {
+  const parts = token.split(".");
+  if (parts.length !== 3) {
+    return false;
+  }
+
+  try {
+    const payload = JSON.parse(base64UrlDecode(parts[1])) as { exp?: number };
+    if (!payload.exp) {
+      return false;
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    return payload.exp <= nowSeconds + thresholdSeconds;
+  } catch {
+    return false;
+  }
+}
+
 function apiUrl(path: string): string {
   return `${runtimeConfig.apiBaseUrl}${path}`;
 }
@@ -218,6 +243,20 @@ async function tryRefreshTokens(): Promise<boolean> {
   } finally {
     inflightRefresh = null;
   }
+}
+
+export async function ensureAccessToken(): Promise<string | null> {
+  const currentToken = getAccessToken();
+  if (currentToken && !isAccessTokenExpiringSoon(currentToken)) {
+    return currentToken;
+  }
+
+  const refreshed = await tryRefreshTokens();
+  if (!refreshed) {
+    return null;
+  }
+
+  return getAccessToken();
 }
 
 export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
