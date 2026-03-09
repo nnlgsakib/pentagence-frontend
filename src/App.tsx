@@ -47,6 +47,10 @@ import BillingPage from "@/pages/app/BillingPage";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminUsersPage from "@/pages/admin/AdminUsersPage";
 import AdminAuditPage from "@/pages/admin/AdminAuditPage";
+import AdminSessionsPage from "@/pages/admin/AdminSessionsPage";
+import AdminWorkersPage from "@/pages/admin/AdminWorkersPage";
+import AdminQueuePage from "@/pages/admin/AdminQueuePage";
+import AdminSystemPage from "@/pages/admin/AdminSystemPage";
 import AdminPlaceholderPage from "@/pages/admin/AdminPlaceholderPage";
 
 // Error pages
@@ -107,12 +111,12 @@ const App = () => (
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/users/:userId" element={<AdminPlaceholderPage title="User Detail" />} />
-              <Route path="/admin/sessions" element={<AdminPlaceholderPage title="All Sessions" />} />
-              <Route path="/admin/sessions/:sessionId" element={<AdminPlaceholderPage title="Session Admin Detail" />} />
-              <Route path="/admin/workers" element={<AdminPlaceholderPage title="Workers" />} />
+              <Route path="/admin/sessions" element={<AdminSessionsPage />} />
+              <Route path="/admin/sessions/:sessionId" element={<AdminSessionsPage />} />
+              <Route path="/admin/workers" element={<AdminWorkersPage />} />
               <Route path="/admin/clusters" element={<AdminPlaceholderPage title="Clusters" />} />
-              <Route path="/admin/queue" element={<AdminPlaceholderPage title="Queue" />} />
-              <Route path="/admin/system" element={<AdminPlaceholderPage title="System Health" />} />
+              <Route path="/admin/queue" element={<AdminQueuePage />} />
+              <Route path="/admin/system" element={<AdminSystemPage />} />
               <Route path="/admin/audit" element={<AdminAuditPage />} />
               <Route path="/admin/settings" element={<AdminPlaceholderPage title="System Settings" />} />
             </Route>

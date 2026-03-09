@@ -6,8 +6,13 @@ export interface SessionLogEvent {
   session: string;
   level: string;
   event_type: string;
+  source: string;
   message: string;
   ts: string;
+  terminal: boolean;
+  attach_state?: string;
+  attach_failure?: string;
+  workflow_id?: string;
 }
 
 export type LogsConnectionState = "connecting" | "connected" | "reconnecting" | "closed" | "error";
@@ -31,8 +36,13 @@ function normalizeEvent(raw: { id?: string; session?: string; values?: Record<st
     session: raw.session || String(values.session_id || ""),
     level: String(values.level || "info"),
     event_type: String(values.event_type || "worker-log"),
+    source: String(values.source || "system"),
     message: String(values.message || ""),
     ts: String(values.ts || new Date().toISOString()),
+    terminal: Boolean(values.terminal),
+    attach_state: typeof values.log_attach_state === "string" ? values.log_attach_state : undefined,
+    attach_failure: typeof values.log_attach_failure === "string" ? values.log_attach_failure : undefined,
+    workflow_id: typeof values.workflow_id === "string" ? values.workflow_id : undefined,
   };
 }
 

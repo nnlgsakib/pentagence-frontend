@@ -1,11 +1,22 @@
 import { useParams, Link } from "react-router-dom";
 import { sessionApi, type SessionArtifact, type SessionRecord } from "@/lib/api";
 import { StatusPill } from "@/components/StatusPill";
-import { ArrowLeft, ExternalLink, Clock, GitBranch } from "lucide-react";
+import { ArrowLeft, ExternalLink, Clock, GitBranch, ShieldCheck, HardDriveDownload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useMemo, useState } from "react";
 
+type TerminalSummaryAgent = {
+  agent?: string;
+  duration?: string;
+  cost?: string;
+};
+
 const statuses = ["queued", "provisioning", "running", "finalizing", "completed", "failed", "canceled"] as const;
+
+function getSummaryValue(summary: Record<string, unknown>, key: string): string {
+  const value = summary[key];
+  return typeof value === "number" || typeof value === "string" ? String(value) : "-";
+}
 
 export default function SessionDetailPage() {
   const { sessionId } = useParams();
@@ -47,8 +58,12 @@ export default function SessionDetailPage() {
     };
 
     void load();
+    const interval = window.setInterval(() => {
+      void load();
+    }, 5000);
     return () => {
       cancelled = true;
+      window.clearInterval(interval);
     };
   }, [sessionId]);
 
@@ -70,6 +85,10 @@ export default function SessionDetailPage() {
 
   const currentStep = statuses.indexOf(session.status);
   const canCancel = ["queued", "provisioning", "running", "finalizing"].includes(session.status);
+  const summary = session.output_summary || {};
+  const terminalSummary = (summary.terminal_summary as Record<string, unknown> | undefined) || {};
+  const terminalAgents = Array.isArray(terminalSummary.agents) ? (terminalSummary.agents as TerminalSummaryAgent[]) : [];
+  const warnings = Array.isArray(summary.warnings) ? summary.warnings.map(String) : [];
 
   const cancelSession = async () => {
     if (!canCancel) {
@@ -97,9 +116,9 @@ export default function SessionDetailPage() {
         <Button variant="ghost" size="sm" asChild>
           <Link to="/app/sessions"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
-        <div className="flex-1 min-w-0">
-          <h1 className="font-heading text-xl font-bold text-foreground truncate">{session.repo_ref || session.id}</h1>
-          <p className="text-sm text-pen-text-muted truncate">{session.target_url}</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="truncate font-heading text-xl font-bold text-foreground">{session.repo_ref || session.id}</h1>
+          <p className="truncate text-sm text-pen-text-muted">{session.target_url}</p>
         </div>
         <StatusPill status={session.status}>{session.status}</StatusPill>
         {canCancel && (
@@ -109,75 +128,130 @@ export default function SessionDetailPage() {
         )}
       </div>
 
-      {/* State stepper */}
       <div className="flex items-center gap-1 overflow-x-auto pb-2">
-        {statuses.map((s, i) => (
-          <div key={s} className="flex items-center">
-            <div className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap ${
-              i <= currentStep
-                ? session.status === "failed" && i === currentStep ? "bg-pen-danger/10 text-pen-danger" : "bg-pen-brand/10 text-pen-brand"
+        {statuses.map((status, index) => (
+          <div key={status} className="flex items-center">
+            <div className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium ${
+              index <= currentStep
+                ? session.status === "failed" && index === currentStep
+                  ? "bg-pen-danger/10 text-pen-danger"
+                  : "bg-pen-brand/10 text-pen-brand"
                 : "bg-pen-elevated text-pen-text-muted"
             }`}>
-              {s}
+              {status}
             </div>
-            {i < statuses.length - 1 && <div className={`w-6 h-px mx-1 ${i < currentStep ? "bg-pen-brand/40" : "bg-pen-border-soft"}`} />}
+            {index < statuses.length - 1 && <div className={`mx-1 h-px w-6 ${index < currentStep ? "bg-pen-brand/40" : "bg-pen-border-soft"}`} />}
           </div>
         ))}
       </div>
 
-      {/* Summary cards */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="flex items-center gap-2 text-pen-text-muted text-xs mb-1"><GitBranch className="h-3 w-3" /> Repository</div>
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><GitBranch className="h-3 w-3" /> Repository</div>
           <p className="text-sm font-medium text-foreground">{session.repo_ref}</p>
         </div>
         <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="flex items-center gap-2 text-pen-text-muted text-xs mb-1"><ExternalLink className="h-3 w-3" /> Target</div>
-          <p className="text-sm font-medium text-foreground truncate">{session.target_url}</p>
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><ExternalLink className="h-3 w-3" /> Target</div>
+          <p className="truncate text-sm font-medium text-foreground">{session.target_url}</p>
         </div>
         <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="flex items-center gap-2 text-pen-text-muted text-xs mb-1"><Clock className="h-3 w-3" /> Duration</div>
-          <p className="text-sm font-medium text-foreground">
-            {session.ended_at && session.started_at
-              ? `${Math.round((new Date(session.ended_at).getTime() - new Date(session.started_at).getTime()) / 60000)}m`
-              : "In progress"}
-          </p>
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><Clock className="h-3 w-3" /> Duration</div>
+          <p className="text-sm font-medium text-foreground">{duration}</p>
+        </div>
+        <div className="rounded-lg border border-pen-border-soft bg-card p-4">
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><ShieldCheck className="h-3 w-3" /> Cleanup</div>
+          <p className="text-sm font-medium text-foreground">{session.cleanup_status}</p>
         </div>
       </div>
 
-      {/* Tabs: Findings, Artifacts */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      {(summary.workflow_id || summary.workspace_name || terminalAgents.length > 0) && (
+        <div className="rounded-xl border border-pen-border-soft bg-card p-4 text-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="font-heading text-sm font-semibold text-foreground">Shannon Run Summary</h2>
+              <p className="text-pen-text-muted">Resolved workflow metadata and final agent breakdown from the Shannon workflow log.</p>
+            </div>
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div>
+              <p className="text-xs text-pen-text-muted">Workflow ID</p>
+              <p className="break-all font-medium text-foreground">{String(summary.workflow_id || terminalSummary.workflow_id || "Pending")}</p>
+            </div>
+            <div>
+              <p className="text-xs text-pen-text-muted">Workspace</p>
+              <p className="font-medium text-foreground">{String(summary.workspace_name || session.id)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-pen-text-muted">Total Cost</p>
+              <p className="font-medium text-foreground">{String(terminalSummary.total_cost || "Pending")}</p>
+            </div>
+          </div>
+          {terminalAgents.length > 0 && (
+            <div className="mt-4 rounded-lg border border-pen-border-soft">
+              <div className="grid grid-cols-[minmax(0,1fr)_120px_120px] gap-3 border-b border-pen-border-soft px-4 py-2 text-xs text-pen-text-muted">
+                <span>Agent</span>
+                <span>Duration</span>
+                <span>Cost</span>
+              </div>
+              <div className="divide-y divide-pen-border-soft">
+                {terminalAgents.map((agent) => (
+                  <div key={`${agent.agent}-${agent.duration}`} className="grid grid-cols-[minmax(0,1fr)_120px_120px] gap-3 px-4 py-3 text-sm">
+                    <span className="truncate text-foreground">{agent.agent || "Unknown"}</span>
+                    <span className="text-pen-text-muted">{agent.duration || "-"}</span>
+                    <span className="text-pen-text-muted">{agent.cost || "-"}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(session.cleanup_error || session.error_reason || warnings.length > 0) && (
+        <div className="rounded-xl border border-pen-border-soft bg-card p-4 text-sm">
+          <h2 className="font-heading text-sm font-semibold text-foreground">Operational Notes</h2>
+          <div className="mt-2 space-y-2 text-pen-text-muted">
+            {session.error_reason && <p><span className="text-foreground">Execution:</span> {session.error_reason}</p>}
+            {session.cleanup_error && <p><span className="text-foreground">Cleanup:</span> {session.cleanup_error}</p>}
+            {warnings.map((warning) => <p key={warning}><span className="text-foreground">Output warning:</span> {warning}</p>)}
+          </div>
+        </div>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-pen-border-soft bg-card">
-          <div className="p-4 border-b border-pen-border-soft flex items-center justify-between">
+          <div className="flex items-center justify-between border-b border-pen-border-soft p-4">
             <h2 className="font-heading text-sm font-semibold text-foreground">Execution</h2>
             <Link to={`/app/sessions/${session.id}/logs`} className="text-xs text-pen-brand hover:text-pen-brand-hover">View logs →</Link>
           </div>
-          <div className="p-4 text-sm text-pen-text-muted space-y-2">
-            <p>Use live logs to watch worker output and pipeline state transitions.</p>
-            {session.error_reason && <p className="text-pen-danger">Error: {session.error_reason}</p>}
+          <div className="space-y-2 p-4 text-sm text-pen-text-muted">
+            <p>Live logs now stream with replay-safe reconnects and backend terminal markers.</p>
+            <p>Workflow log found: <span className="font-medium text-foreground">{String(summary.workflow_log_found ?? false)}</span></p>
+            <p>Finalized from: <span className="font-medium text-foreground">{getSummaryValue(summary, "finalized_from")}</span></p>
           </div>
         </div>
 
         <div className="rounded-xl border border-pen-border-soft bg-card">
-          <div className="p-4 border-b border-pen-border-soft flex items-center justify-between">
-            <h2 className="font-heading text-sm font-semibold text-foreground">Artifacts ({artifacts.length})</h2>
+          <div className="flex items-center justify-between border-b border-pen-border-soft p-4">
+            <h2 className="font-heading text-sm font-semibold text-foreground">Outputs ({artifacts.length})</h2>
             <Link to={`/app/sessions/${session.id}/artifacts`} className="text-xs text-pen-brand hover:text-pen-brand-hover">View all →</Link>
           </div>
           <div className="divide-y divide-pen-border-soft">
-            {artifacts.length > 0 ? artifacts.map((a) => (
-              <div key={a.id} className="flex items-center justify-between px-4 py-3">
+            {artifacts.length > 0 ? artifacts.slice(0, 4).map((artifact) => (
+              <div key={artifact.id} className="flex items-center justify-between px-4 py-3">
                 <div className="min-w-0">
-                  <p className="text-sm text-foreground truncate">{a.display_name}</p>
-                  <p className="text-xs text-pen-text-muted">{(a.size_bytes / 1024).toFixed(1)} KB • {a.mime_type}</p>
+                  <p className="truncate text-sm text-foreground">{artifact.display_name}</p>
+                  <p className="text-xs text-pen-text-muted">{artifact.category} • {(artifact.size_bytes / 1024).toFixed(1)} KB</p>
                 </div>
-                <Button asChild variant="ghost" size="sm" className="text-xs"><Link to={`/app/sessions/${session.id}/artifacts`}>Open</Link></Button>
+                <HardDriveDownload className="h-4 w-4 text-pen-brand" />
               </div>
             )) : (
-              <p className="px-4 py-8 text-sm text-pen-text-muted text-center">No artifacts yet</p>
+              <p className="px-4 py-8 text-center text-sm text-pen-text-muted">No persisted outputs yet.</p>
             )}
           </div>
         </div>
       </div>
+
       {actionMessage && <p className="text-sm text-pen-text-muted">{actionMessage}</p>}
     </div>
   );

@@ -57,6 +57,11 @@ export interface SessionRecord {
   started_at: string | null;
   ended_at: string | null;
   error_reason: string | null;
+  cleanup_status: string;
+  cleanup_error: string | null;
+  finalized_at: string | null;
+  last_output_sync_at: string | null;
+  output_summary: Record<string, unknown>;
 }
 
 export interface SessionArtifact {
@@ -65,6 +70,23 @@ export interface SessionArtifact {
   display_name: string;
   mime_type: string;
   size_bytes: number;
+  category: string;
+  source_path: string;
+  created_at: string;
+}
+
+export interface AdminSessionRecord extends SessionRecord {
+  user_id: string;
+}
+
+export interface AuditEventRecord {
+  id: number;
+  actor_user_id: string | null;
+  actor_role: string | null;
+  action: string;
+  target_type: string;
+  target_id: string;
+  metadata: Record<string, unknown>;
   created_at: string;
 }
 
@@ -82,6 +104,9 @@ export interface SystemMetrics {
   active_sessions: number;
   queued_jobs: number;
   workers: number;
+  cleanup_backlog: number;
+  failed_runs_24h: number;
+  missing_outputs: number;
 }
 
 export class ApiError extends Error {
@@ -406,6 +431,11 @@ export const sessionApi = {
 };
 
 export const adminApi = {
+  async sessions(): Promise<AdminSessionRecord[]> {
+    const payload = await apiRequest<{ sessions: AdminSessionRecord[] }>("/v1/admin/sessions");
+    return payload.sessions || [];
+  },
+
   async workers(): Promise<WorkerRecord[]> {
     const payload = await apiRequest<{ workers: WorkerRecord[] }>("/v1/admin/workers");
     return payload.workers || [];
@@ -420,7 +450,16 @@ export const adminApi = {
     return apiRequest<SystemMetrics>("/v1/admin/system");
   },
 
+  async audit(): Promise<AuditEventRecord[]> {
+    const payload = await apiRequest<{ events: AuditEventRecord[] }>("/v1/admin/audit");
+    return payload.events || [];
+  },
+
   async cancelSession(sessionId: string): Promise<void> {
     await apiRequest<{ ok: boolean }>(`/v1/admin/sessions/${sessionId}/cancel`, { method: "POST" });
+  },
+
+  async retryCleanup(sessionId: string): Promise<void> {
+    await apiRequest<{ ok: boolean }>(`/v1/admin/sessions/${sessionId}/cleanup`, { method: "POST" });
   },
 };

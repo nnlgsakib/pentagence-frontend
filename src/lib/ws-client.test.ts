@@ -70,6 +70,8 @@ describe("SessionLogsSocket", () => {
       expect.objectContaining({
         id: "13-0",
         message: "hello",
+        source: "system",
+        terminal: false,
       }),
     );
     expect(onError).not.toHaveBeenCalled();
