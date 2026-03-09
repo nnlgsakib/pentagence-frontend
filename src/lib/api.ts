@@ -64,6 +64,18 @@ export interface SessionRecord {
   output_summary: Record<string, unknown>;
 }
 
+export interface SessionAISummary {
+  headline?: string;
+  risk_overview?: string;
+  business_impact?: string;
+  key_findings?: string[];
+  next_steps?: string[];
+  generated_at?: string;
+  provider?: string;
+  model?: string;
+  source_artifacts?: string[];
+}
+
 export interface SessionArtifact {
   id: string;
   object_key: string;
