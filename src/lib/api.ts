@@ -432,6 +432,10 @@ export const sessionApi = {
     await apiRequest<{ ok: boolean }>(`/v1/sessions/${id}/cancel`, { method: "POST" });
   },
 
+  async retryAISummary(id: string): Promise<{ ok: boolean; retry_count: number }> {
+    return apiRequest<{ ok: boolean; retry_count: number }>(`/v1/sessions/${id}/ai-summary/retry`, { method: "POST" });
+  },
+
   async listArtifacts(sessionId: string): Promise<SessionArtifact[]> {
     const payload = await apiRequest<{ artifacts: SessionArtifact[] }>(`/v1/sessions/${sessionId}/artifacts`);
     return payload.artifacts || [];

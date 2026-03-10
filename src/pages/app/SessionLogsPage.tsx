@@ -30,14 +30,17 @@ function formatConnectionLabel(state: LogsConnectionState): string {
 }
 
 function isPrimaryWorkflowSource(source: string): boolean {
-  return source === "workflow-tail";
+	return source === "workflow-tail" || source === "ai-summary";
 }
 
 function formatSourceLabel(source: string): string {
-  if (source === "workflow-tail") {
-    return "pentest";
-  }
-  return source;
+	if (source === "workflow-tail") {
+		return "pentest";
+	}
+	if (source === "ai-summary") {
+		return "ai-summary";
+	}
+	return source;
 }
 
 function readString(value: unknown): string | null {

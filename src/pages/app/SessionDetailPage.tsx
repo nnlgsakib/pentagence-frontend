@@ -99,8 +99,10 @@ export default function SessionDetailPage() {
   const warnings = Array.isArray(summary.warnings) ? summary.warnings.map(String) : [];
   const aiSummaryStatus = readString(summary.ai_summary_status, session.status === "completed" ? "unavailable" : "pending");
   const aiSummaryError = readString(summary.ai_summary_error);
+  const aiSummaryRetryCount = typeof summary.ai_summary_retry_count === "number" ? summary.ai_summary_retry_count : 0;
   const aiSummary = (summary.ai_summary as SessionAISummary | undefined) || undefined;
   const aiSourceArtifacts = readStringArray(summary.ai_summary_source_artifacts);
+  const canRetryAISummary = session.status === "completed" && (aiSummaryStatus === "failed" || aiSummaryStatus === "unavailable") && aiSummaryRetryCount < 2;
 
   const cancelSession = async () => {
     if (!canCancel) {
@@ -119,6 +121,17 @@ export default function SessionDetailPage() {
       setActionMessage("Session cancellation requested");
     } catch {
       setActionMessage("Session cancellation failed");
+    }
+  };
+
+  const retryAISummary = async () => {
+    try {
+      const result = await sessionApi.retryAISummary(session.id);
+      const next = await sessionApi.get(session.id);
+      setSession(next);
+      setActionMessage(`AI summary retry started (${result.retry_count}/2)`);
+    } catch {
+      setActionMessage("AI summary retry failed to start");
     }
   };
 
@@ -205,6 +218,11 @@ export default function SessionDetailPage() {
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {canRetryAISummary && (
+                  <Button variant="outline" size="sm" onClick={retryAISummary}>
+                    Retry AI Summary
+                  </Button>
+                )}
                 <span className={`rounded-full px-3 py-1 text-xs font-medium ${
                   aiSummaryStatus === "ready"
                     ? "bg-pen-success/10 text-pen-success"
@@ -280,19 +298,21 @@ export default function SessionDetailPage() {
 
             {aiSummaryStatus === "pending" && (
               <div className="rounded-xl border border-dashed border-pen-border-soft bg-background/40 px-4 py-5 text-sm text-pen-text-muted">
-                We already have the artifacts and terminal summary. The backend is still generating the narrative summary from those persisted outputs.
+                We already have the artifacts and terminal summary. The backend is still generating the narrative summary from those persisted outputs. Open `View logs` to watch live AI summary progress and retries.
               </div>
             )}
 
             {aiSummaryStatus === "failed" && (
               <div className="rounded-xl border border-dashed border-pen-danger/40 bg-pen-danger/5 px-4 py-5 text-sm text-pen-danger">
-                {aiSummaryError || "The AI summary step failed after the session completed."}
+                {aiSummaryError || "The AI summary step failed after the session completed."} Check `View logs` for the exact provider error and retry history.
+                <div className="mt-2 text-xs text-pen-text-muted">Manual retries used: {aiSummaryRetryCount}/2</div>
               </div>
             )}
 
             {aiSummaryStatus === "unavailable" && (
               <div className="rounded-xl border border-dashed border-pen-border-soft bg-background/40 px-4 py-5 text-sm text-pen-text-muted">
                 AI summary generation is unavailable for this run. You can still inspect the session outputs and workflow evidence below.
+                <div className="mt-2 text-xs text-pen-text-muted">Manual retries used: {aiSummaryRetryCount}/2</div>
               </div>
             )}
           </div>
