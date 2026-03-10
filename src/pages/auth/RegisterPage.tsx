@@ -1,11 +1,13 @@
 import { AppLogo } from "@/components/AppLogo";
+import { AuthField } from "@/components/auth/AuthField";
+import { AuthSurface } from "@/components/auth/AuthSurface";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { ApiError, authApi } from "@/lib/api";
 import { runtimeConfig } from "@/lib/runtime-config";
-import { ArrowRight, LockKeyhole, Mail, UserRound } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -15,6 +17,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,79 +42,101 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="mb-4 flex justify-center"><AppLogo /></div>
-        <h1 className="font-heading text-3xl font-bold text-foreground">Create your account</h1>
-        <p className="mt-2 text-sm text-pen-text-muted">Set up your workspace to launch runs, review findings, and manage evidence in one place.</p>
-      </div>
-      <div className="rounded-2xl border border-pen-border-soft bg-card/90 p-6 shadow-pen-md">
-        <div className="mb-5 grid gap-3 rounded-2xl border border-pen-border-soft bg-pen-elevated/30 p-4 text-left sm:grid-cols-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Centralized workflow</p>
-            <p className="mt-1 text-sm text-foreground">Run sessions, review outputs, and track outcomes from a single workspace.</p>
+    <AuthSurface
+      eyebrow="Create Your Workspace"
+      title="Set up secure access in minutes"
+      description="Create your account to launch assessments, review findings, and manage evidence from a single security workspace."
+      footer={
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Already have an account? <Link to="/auth/login" className="font-semibold text-[#0f6b78] transition-colors hover:text-[#0b5560]">Sign in</Link>
+        </p>
+      }
+    >
+      <div className="space-y-6 p-1">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-pen-text-muted">Account setup</p>
+              <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-foreground">Create your Pentagence account</h2>
+            </div>
+            <AppLogo collapsed />
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Reliable reporting</p>
-            <p className="mt-1 text-sm text-foreground">Dashboard summaries reflect actual session activity rather than placeholder metrics.</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Flexible access</p>
-            <p className="mt-1 text-sm text-foreground">Use email and password or Google sign-in when it is available in your environment.</p>
-          </div>
+          <p className="text-sm leading-6 text-pen-text-secondary">A refined sign-up flow keeps the first step clear: create credentials, protect access, and start working.</p>
         </div>
 
         {runtimeConfig.googleAuthEnabled && (
           <>
-            <Button type="button" variant="outline" className="mb-4 w-full justify-center rounded-xl border-pen-border-soft bg-background/70" onClick={handleGoogleRegister}>
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-pen-border-soft text-xs font-semibold">G</span>
+            <Button type="button" variant="outline" className="h-12 w-full rounded-2xl border-pen-border-soft bg-pen-surface2 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-pen-border-strong hover:bg-pen-elevated" onClick={handleGoogleRegister}>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-pen-border-soft bg-pen-base text-xs font-bold text-foreground">G</span>
               Continue with Google
             </Button>
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-pen-text-muted">
+            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-pen-text-muted">
               <span className="h-px flex-1 bg-pen-border-soft" />
-              or create with email
+              or register with email
               <span className="h-px flex-1 bg-pen-border-soft" />
             </div>
           </>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Full Name</label>
-            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
-              <UserRound className="h-4 w-4 text-pen-text-muted" />
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" placeholder="Jane Doe" />
-            </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
-            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
-              <Mail className="h-4 w-4 text-pen-text-muted" />
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" placeholder="you@company.com" />
-            </div>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Password</label>
-            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
-              <LockKeyhole className="h-4 w-4 text-pen-text-muted" />
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" placeholder="Min. 8 characters" />
-            </div>
-            <p className="mt-1 text-xs text-pen-text-muted">Choose a strong password with uppercase, lowercase, and numeric characters.</p>
-          </div>
-          <label className="flex items-start gap-2 rounded-xl border border-pen-border-soft bg-pen-elevated/20 px-3 py-3 text-xs text-pen-text-muted">
-            <input type="checkbox" required className="mt-0.5 rounded border-pen-border-soft" />
-            I agree to the Terms of Service and Privacy Policy.
+          <AuthField
+            label="Full name"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+            autoComplete="name"
+            placeholder="Jane Doe"
+            icon={<UserRound className="h-4 w-4" />}
+          />
+
+          <AuthField
+            label="Work email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            placeholder="you@company.com"
+            icon={<Mail className="h-4 w-4" />}
+          />
+
+          <AuthField
+            label="Password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            autoComplete="new-password"
+            placeholder="Create a strong password"
+            icon={<LockKeyhole className="h-4 w-4" />}
+            hint="Use at least eight characters with uppercase, lowercase, and numeric characters."
+            trailing={
+              <button
+                type="button"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                onClick={() => setShowPassword((value) => !value)}
+                className="rounded-full p-2 text-pen-text-muted transition-colors hover:bg-pen-elevated hover:text-foreground focus:outline-none focus:ring-2 focus:ring-pen-brand/20"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            }
+          />
+
+          <label className="flex items-start gap-3 rounded-2xl border border-pen-border-soft bg-pen-surface2/60 px-4 py-4 text-sm text-pen-text-secondary">
+            <input type="checkbox" required className="mt-0.5 h-4 w-4 rounded border-pen-border-strong bg-pen-base text-pen-brand focus:ring-pen-brand" />
+            <span>I agree to the Terms of Service and Privacy Policy.</span>
           </label>
-          {error && <p className="rounded-lg border border-pen-danger/30 bg-pen-danger/5 px-3 py-2 text-sm text-pen-danger">{error}</p>}
-          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
+
+          {error ? <p className="rounded-2xl border border-pen-danger/30 bg-pen-danger/10 px-4 py-3 text-sm text-pen-danger">{error}</p> : null}
+
+          <Button type="submit" className="h-12 w-full rounded-2xl bg-pen-brand text-primary-foreground shadow-[0_18px_35px_hsl(var(--color-brand-primary)/0.22)] transition-all hover:-translate-y-0.5 hover:bg-pen-brand-hover" disabled={loading}>
             {loading ? "Creating account..." : "Create account"}
             {!loading && <ArrowRight className="h-4 w-4" />}
           </Button>
         </form>
       </div>
-      <p className="text-center text-sm text-pen-text-muted">
-        Already have an account? <Link to="/auth/login" className="text-pen-brand hover:text-pen-brand-hover">Sign in</Link>
-      </p>
-    </div>
+    </AuthSurface>
   );
 }

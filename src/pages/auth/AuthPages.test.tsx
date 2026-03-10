@@ -1,5 +1,5 @@
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 async function renderLoginPage(googleAuthEnabled: boolean) {
@@ -122,8 +122,33 @@ describe("auth pages", () => {
       </MemoryRouter>,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /sign in to your dashboard/i }));
+    fireEvent.click(screen.getByRole("button", { name: /sign in securely/i }));
     expect(await screen.findByRole("button", { name: /signing in/i })).toBeDisabled();
-    resolveLogin?.();
+    await act(async () => {
+      resolveLogin?.();
+    });
+  });
+
+  it("toggles password visibility on login", async () => {
+    await renderLoginPage(false);
+
+    const passwordField = screen.getByLabelText("Password") as HTMLInputElement;
+    expect(passwordField.type).toBe("password");
+
+    fireEvent.click(screen.getByRole("button", { name: /show password/i }));
+    expect(passwordField.type).toBe("text");
+
+    fireEvent.click(screen.getByRole("button", { name: /hide password/i }));
+    expect(passwordField.type).toBe("password");
+  });
+
+  it("toggles password visibility on register", async () => {
+    await renderRegisterPage(false);
+
+    const passwordField = screen.getByPlaceholderText("Create a strong password") as HTMLInputElement;
+    expect(passwordField.type).toBe("password");
+
+    fireEvent.click(screen.getByRole("button", { name: /show password/i }));
+    expect(passwordField.type).toBe("text");
   });
 });

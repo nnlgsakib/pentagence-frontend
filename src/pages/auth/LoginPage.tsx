@@ -1,19 +1,22 @@
 import { AppLogo } from "@/components/AppLogo";
+import { AuthField } from "@/components/auth/AuthField";
+import { AuthSurface } from "@/components/auth/AuthSurface";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
 import { ApiError, authApi } from "@/lib/api";
 import { runtimeConfig } from "@/lib/runtime-config";
-import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole, Mail } from "lucide-react";
 
 export default function LoginPage() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [email, setEmail] = useState("admin@pentagence.local");
-  const [password, setPassword] = useState("ChangeMe_Admin_123!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,71 +41,93 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="text-center">
-        <div className="mb-4 flex justify-center"><AppLogo /></div>
-        <h1 className="font-heading text-3xl font-bold text-foreground">Welcome back</h1>
-        <p className="mt-2 text-sm text-pen-text-muted">Sign in to access your security workspace, recent runs, and reporting history.</p>
-      </div>
-      <div className="rounded-2xl border border-pen-border-soft bg-card/90 p-6 shadow-pen-md">
-        <div className="mb-5 grid gap-3 rounded-2xl border border-pen-border-soft bg-pen-elevated/30 p-4 text-left sm:grid-cols-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Run visibility</p>
-            <p className="mt-1 text-sm text-foreground">Execution logs, reports, and artifacts remain associated with your account.</p>
+    <AuthSurface
+      eyebrow="Security Workspace Access"
+      title="Welcome back to Pentagence"
+      description="Sign in to review active assessments, inspect evidence, and move directly into the security work that needs attention."
+      footer={
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Don&apos;t have an account? <Link to="/auth/register" className="font-semibold text-[#0f6b78] transition-colors hover:text-[#0b5560]">Create one</Link>
+        </p>
+      }
+    >
+      <div className="space-y-6 p-1">
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-pen-text-muted">Sign in</p>
+              <h2 className="mt-1 font-heading text-3xl font-bold tracking-tight text-foreground">Access your workspace</h2>
+            </div>
+            <AppLogo collapsed />
           </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Secure access</p>
-            <p className="mt-1 text-sm text-foreground">Session handling follows the same short-lived token and refresh protections across sign-in methods.</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Operational focus</p>
-            <p className="mt-1 text-sm text-foreground">Recent activity and exceptions are available as soon as you enter the dashboard.</p>
-          </div>
+          <p className="text-sm leading-6 text-pen-text-secondary">Use your email credentials or continue with Google when single sign-on is available.</p>
         </div>
 
         {runtimeConfig.googleAuthEnabled && (
           <>
-            <Button type="button" variant="outline" className="mb-4 w-full justify-center rounded-xl border-pen-border-soft bg-background/70" onClick={handleGoogleLogin}>
-              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-pen-border-soft text-xs font-semibold">G</span>
+            <Button type="button" variant="outline" className="h-12 w-full rounded-2xl border-pen-border-soft bg-pen-surface2 text-foreground shadow-sm transition-all hover:-translate-y-0.5 hover:border-pen-border-strong hover:bg-pen-elevated" onClick={handleGoogleLogin}>
+              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-pen-border-soft bg-pen-base text-xs font-bold text-foreground">G</span>
               Continue with Google
             </Button>
-            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-pen-text-muted">
+            <div className="flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.24em] text-pen-text-muted">
               <span className="h-px flex-1 bg-pen-border-soft" />
-              or sign in with email
+              or use email
               <span className="h-px flex-1 bg-pen-border-soft" />
             </div>
           </>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
-            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
-              <Mail className="h-4 w-4 text-pen-text-muted" />
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@company.com" className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" />
+          <AuthField
+            label="Work email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+            placeholder="you@company.com"
+            icon={<Mail className="h-4 w-4" />}
+            hint="Use the email associated with your Pentagence workspace."
+          />
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-semibold text-foreground">Password</span>
+              <Link to="/auth/forgot-password" className="text-sm font-medium text-pen-brand transition-colors hover:text-pen-brand-hover">Forgot password?</Link>
             </div>
+            <AuthField
+              label=""
+              aria-label="Password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="Enter your password"
+              icon={<LockKeyhole className="h-4 w-4" />}
+              trailing={
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((value) => !value)}
+                  className="rounded-full p-2 text-pen-text-muted transition-colors hover:bg-pen-elevated hover:text-foreground focus:outline-none focus:ring-2 focus:ring-pen-brand/20"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              }
+            />
           </div>
-          <div>
-            <div className="mb-1.5 flex items-center justify-between">
-              <label className="block text-sm font-medium text-foreground">Password</label>
-              <Link to="/auth/forgot-password" className="text-sm text-pen-brand hover:text-pen-brand-hover">Forgot password?</Link>
-            </div>
-            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
-              <LockKeyhole className="h-4 w-4 text-pen-text-muted" />
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Enter your password" className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" />
-            </div>
-          </div>
-          {error && <p className="rounded-lg border border-pen-danger/30 bg-pen-danger/5 px-3 py-2 text-sm text-pen-danger">{error}</p>}
-          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+
+          {error ? <p className="rounded-2xl border border-pen-danger/30 bg-pen-danger/10 px-4 py-3 text-sm text-pen-danger">{error}</p> : null}
+
+          <Button type="submit" className="h-12 w-full rounded-2xl bg-pen-brand text-primary-foreground shadow-[0_18px_35px_hsl(var(--color-brand-primary)/0.22)] transition-all hover:-translate-y-0.5 hover:bg-pen-brand-hover" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in securely"}
             {!loading && <ArrowRight className="h-4 w-4" />}
           </Button>
-          <p className="text-xs text-pen-text-muted">Use your Pentagence credentials or Google SSO when it is enabled for this environment.</p>
+
+          <p className="text-xs leading-5 text-pen-text-muted">Your session remains protected by short-lived tokens and rotating refresh sessions after sign-in.</p>
         </form>
       </div>
-      <p className="text-center text-sm text-pen-text-muted">
-        Don't have an account? <Link to="/auth/register" className="text-pen-brand hover:text-pen-brand-hover">Sign up</Link>
-      </p>
-    </div>
+    </AuthSurface>
   );
 }
