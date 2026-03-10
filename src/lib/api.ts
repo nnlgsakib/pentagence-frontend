@@ -133,6 +133,20 @@ export interface WorkerRecord {
   updated_at: string;
 }
 
+export interface AdminUserRecord {
+  id: string;
+  email: string;
+  role: UserRole;
+  created_at: string;
+  updated_at: string;
+  last_login_at: string | null;
+  must_rotate_password: boolean;
+  session_count: number;
+  last_session_at: string | null;
+  active_session_count: number;
+  status: string;
+}
+
 export interface SystemMetrics {
   active_sessions: number;
   queued_jobs: number;
@@ -478,6 +492,11 @@ export const sessionApi = {
 };
 
 export const adminApi = {
+  async users(): Promise<AdminUserRecord[]> {
+    const payload = await apiRequest<{ users: AdminUserRecord[] }>("/v1/admin/users");
+    return payload.users || [];
+  },
+
   async sessions(): Promise<AdminSessionRecord[]> {
     const payload = await apiRequest<{ sessions: AdminSessionRecord[] }>("/v1/admin/sessions");
     return payload.sessions || [];
@@ -508,5 +527,9 @@ export const adminApi = {
 
   async retryCleanup(sessionId: string): Promise<void> {
     await apiRequest<{ ok: boolean }>(`/v1/admin/sessions/${sessionId}/cleanup`, { method: "POST" });
+  },
+
+  async forceFinalize(sessionId: string): Promise<{ ok: boolean; message?: string }> {
+    return apiRequest<{ ok: boolean; message?: string }>(`/v1/admin/sessions/${sessionId}/force-finalize`, { method: "POST" });
   },
 };

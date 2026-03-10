@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 
 export default function AdminQueuePage() {
   const [queue, setQueue] = useState<Record<string, number>>({});
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -12,10 +13,15 @@ export default function AdminQueuePage() {
         const payload = await adminApi.queue();
         if (!cancelled) {
           setQueue(payload);
+          setError(null);
         }
       } catch {
         if (!cancelled) {
           setError("Failed to load queue stats");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
         }
       }
     };
@@ -29,6 +35,7 @@ export default function AdminQueuePage() {
   return (
     <div className="space-y-6">
       <h1 className="font-heading text-2xl font-bold text-foreground">Queue</h1>
+      <p className="text-sm text-pen-text-muted">Track current job states so operators can spot backlog or retry pressure quickly.</p>
       <div className="rounded-xl border border-pen-border-soft bg-card p-4">
         <div className="space-y-3">
           {Object.entries(queue).map(([status, count]) => (
@@ -37,8 +44,10 @@ export default function AdminQueuePage() {
               <span className="font-mono text-foreground">{count}</span>
             </div>
           ))}
+          {!loading && Object.keys(queue).length === 0 && <p className="text-sm text-pen-text-muted">No queue stats available.</p>}
         </div>
       </div>
+      {loading && <p className="text-sm text-pen-text-muted">Loading queue stats...</p>}
       {error && <p className="text-sm text-pen-danger">{error}</p>}
     </div>
   );

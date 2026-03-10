@@ -2,8 +2,8 @@ import { Outlet, Link, useLocation } from "react-router-dom";
 import { AppLogo } from "@/components/AppLogo";
 import { useAuth } from "@/hooks/useAuth";
 import {
-  LayoutDashboard, Users, Play, Cpu, Server, ListOrdered,
-  Activity, ScrollText, Settings, ChevronLeft, ChevronRight, LogOut, Menu, ArrowLeft
+  LayoutDashboard, Users, Play, Cpu, ListOrdered,
+  Activity, ScrollText, ChevronLeft, ChevronRight, LogOut, Menu, ArrowLeft
 } from "lucide-react";
 import { useState } from "react";
 
@@ -12,11 +12,9 @@ const adminNav = [
   { label: "Users", href: "/admin/users", icon: Users },
   { label: "Sessions", href: "/admin/sessions", icon: Play },
   { label: "Workers", href: "/admin/workers", icon: Cpu },
-  { label: "Clusters", href: "/admin/clusters", icon: Server },
   { label: "Queue", href: "/admin/queue", icon: ListOrdered },
   { label: "System", href: "/admin/system", icon: Activity },
   { label: "Audit Log", href: "/admin/audit", icon: ScrollText },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function AdminLayout() {

@@ -122,6 +122,8 @@ describe("auth pages", () => {
       </MemoryRouter>,
     );
 
+    fireEvent.change(screen.getByPlaceholderText("you@company.com"), { target: { value: "admin@pentagence.local" } });
+    fireEvent.change(screen.getByPlaceholderText("Enter your password"), { target: { value: "ChangeMe_Admin_123!" } });
     fireEvent.click(screen.getByRole("button", { name: /sign in securely/i }));
     expect(await screen.findByRole("button", { name: /signing in/i })).toBeDisabled();
     await act(async () => {

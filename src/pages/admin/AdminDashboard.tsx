@@ -1,7 +1,7 @@
 import { StatCard } from "@/components/StatCard";
 import { StatusPill } from "@/components/StatusPill";
 import { adminApi, type AdminSessionRecord, type SystemMetrics, type WorkerRecord } from "@/lib/api";
-import { Activity, Cpu, ListOrdered, AlertTriangle } from "lucide-react";
+import { Activity, Cpu, ListOrdered, AlertTriangle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -51,9 +51,31 @@ export default function AdminDashboard() {
     };
   }, []);
 
+  const reload = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [nextWorkers, nextQueue, nextSystem, nextSessions] = await Promise.all([
+        adminApi.workers(),
+        adminApi.queue(),
+        adminApi.system(),
+        adminApi.sessions(),
+      ]);
+      setWorkers(nextWorkers);
+      setQueue(nextQueue);
+      setSystem(nextSystem);
+      setSessions(nextSessions);
+    } catch {
+      setError("Failed to load admin telemetry");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const healthyWorkers = useMemo(() => workers.filter((worker) => worker.status === "healthy").length, [workers]);
   const cleanupBacklog = system?.cleanup_backlog || 0;
   const degradedSessions = sessions.filter((session) => session.cleanup_status !== "completed" || session.status === "failed");
+  const degradedWorkers = workers.filter((worker) => worker.status !== "healthy").length;
 
   const cancelSession = async () => {
     if (!cancelSessionID.trim()) {
@@ -78,8 +100,12 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-bold text-foreground">Admin Overview</h1>
+        <div>
+          <h1 className="font-heading text-2xl font-bold text-foreground">Admin Overview</h1>
+          <p className="mt-1 text-sm text-pen-text-muted">Monitor platform health, identify degraded services, and jump straight into intervention workflows.</p>
+        </div>
         <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={reload}><RefreshCw className="h-4 w-4" /> Refresh</Button>
           <Button asChild variant="outline" size="sm"><Link to="/admin/sessions">Sessions</Link></Button>
           <Button asChild variant="outline" size="sm"><Link to="/admin/audit">Audit</Link></Button>
         </div>
@@ -88,9 +114,15 @@ export default function AdminDashboard() {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Active Sessions" value={system?.active_sessions || 0} icon={Activity} />
         <StatCard label="Queued Jobs" value={system?.queued_jobs || 0} icon={ListOrdered} />
-        <StatCard label="Healthy Workers" value={healthyWorkers} icon={Cpu} />
-        <StatCard label="Cleanup Backlog" value={cleanupBacklog} icon={AlertTriangle} change={cleanupBacklog > 0 ? "Needs recovery" : "Healthy"} changeType={cleanupBacklog > 0 ? "negative" : "positive"} />
+        <StatCard label="Healthy Workers" value={healthyWorkers} icon={Cpu} change={degradedWorkers > 0 ? `${degradedWorkers} degraded/offline` : "All workers healthy"} changeType={degradedWorkers > 0 ? "negative" : "positive"} />
+        <StatCard label="Cleanup Backlog" value={cleanupBacklog} icon={AlertTriangle} change={cleanupBacklog > 0 ? "Requires operator review" : "Healthy"} changeType={cleanupBacklog > 0 ? "negative" : "positive"} />
       </div>
+
+      {!loading && error && (
+        <div className="rounded-xl border border-pen-danger/30 bg-pen-danger/10 px-4 py-4 text-sm text-pen-danger">
+          Admin telemetry is partially unavailable. Refresh the dashboard or inspect the specific admin pages for more detail.
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-xl border border-pen-border-soft bg-card">
@@ -105,7 +137,7 @@ export default function AdminDashboard() {
                 <StatusPill status={worker.status === "healthy" ? "completed" : worker.status === "degraded" ? "finalizing" : "failed"}>{worker.status}</StatusPill>
               </div>
             ))}
-            {!loading && workers.length === 0 && <p className="px-4 py-6 text-sm text-pen-text-muted">No workers available</p>}
+            {!loading && workers.length === 0 && <p className="px-4 py-6 text-sm text-pen-text-muted">No workers available. The worker health endpoint returned no active workers.</p>}
           </div>
         </div>
 
@@ -119,7 +151,7 @@ export default function AdminDashboard() {
                 <span className="capitalize text-pen-text-muted">{status}</span>
                 <span className="font-mono text-foreground">{count}</span>
               </div>
-            )) : <p className="text-sm text-pen-text-muted">No queue stats available</p>}
+            )) : <p className="text-sm text-pen-text-muted">No queue stats available. This may mean the queue is empty or the backend could not return status counts.</p>}
             <div className="space-y-2 border-t border-pen-border-soft pt-3">
               <label className="text-xs text-pen-text-muted">Cancel session by ID</label>
               <div className="flex gap-2">
@@ -151,7 +183,7 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {error && <p className="text-sm text-pen-danger">{error}</p>}
+      {loading && <p className="text-sm text-pen-text-muted">Loading admin telemetry...</p>}
     </div>
   );
 }
