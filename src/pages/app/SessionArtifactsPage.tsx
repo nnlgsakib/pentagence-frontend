@@ -14,8 +14,8 @@ type LoadedPreview = {
   objectUrl?: string;
 };
 
-function getArtifactSectionLabel(sourcePath: string, category: string): string {
-  const normalized = sourcePath.replaceAll("\\", "/");
+function getArtifactSectionLabel(sourcePath: string | undefined, category: string): string {
+  const normalized = (sourcePath || "").replaceAll("\\", "/");
   if (normalized.includes("/agents/")) {
     return "Agent Logs";
   }

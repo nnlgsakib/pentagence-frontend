@@ -166,4 +166,25 @@ describe("SessionArtifactsPage", () => {
     expect(screen.getByText(/files larger than 5.0 MB/i)).toBeInTheDocument();
     expect(sessionApi.downloadArtifact).not.toHaveBeenCalled();
   });
+
+  it("renders sanitized artifact source labels without internal object keys", async () => {
+    vi.mocked(sessionApi.get).mockResolvedValue(sessionRecord);
+    vi.mocked(sessionApi.listArtifacts).mockResolvedValue([
+      {
+        id: "artifact-safe",
+        object_key: "",
+        display_name: "workflow.log",
+        mime_type: "text/plain",
+        size_bytes: 1200,
+        category: "workflow-log",
+        source_path: "workflow.log",
+        created_at: "2026-03-09T00:10:05Z",
+      },
+    ]);
+
+    renderPage();
+
+    expect(await screen.findByText("Workflow Log")).toBeInTheDocument();
+    expect(screen.getAllByText("workflow.log").length).toBeGreaterThan(0);
+  });
 });

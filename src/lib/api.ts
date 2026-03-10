@@ -78,12 +78,12 @@ export interface SessionAISummary {
 
 export interface SessionArtifact {
   id: string;
-  object_key: string;
+  object_key?: string;
   display_name: string;
   mime_type: string;
   size_bytes: number;
   category: string;
-  source_path: string;
+  source_path?: string;
   created_at: string;
 }
 
