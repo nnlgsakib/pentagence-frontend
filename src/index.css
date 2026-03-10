@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fira+Code:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,34 +6,66 @@
 
 @layer base {
   :root {
-    /* Pentagence Design System */
-    --color-bg-base: 222 33% 5%;
-    --color-bg-surface-1: 220 27% 9%;
-    --color-bg-surface-2: 222 24% 12%;
-    --color-bg-elevated: 220 22% 16%;
-    --color-border-soft: 218 22% 21%;
-    --color-border-strong: 218 24% 31%;
-    --color-text-primary: 220 50% 95%;
-    --color-text-secondary: 220 20% 73%;
-    --color-text-muted: 222 14% 57%;
-    --color-brand-primary: 207 100% 56%;
-    --color-brand-primary-hover: 207 100% 65%;
-    --color-brand-accent: 168 100% 41%;
-    --color-success: 150 68% 48%;
-    --color-warning: 33 100% 65%;
-    --color-danger: 353 100% 69%;
-    --color-info: 207 100% 67%;
-    --color-focus-ring: 207 100% 77%;
-
-    /* Hero effects */
-    --color-hero-grid: 207 100% 56% / 0.18;
-    --color-hero-glow: 168 100% 41% / 0.24;
-    --color-hero-danger-pulse: 353 100% 69% / 0.20;
-
-    /* Shadows */
-    --shadow-sm: 0 2px 8px rgba(0,0,0,0.18);
-    --shadow-md: 0 8px 24px rgba(0,0,0,0.26);
-    --shadow-lg: 0 14px 38px rgba(0,0,0,0.34);
+    /* Pentagence Cyberpunk Terminal Design System */
+    /* Core backgrounds - deep dark with subtle blue undertones */
+    --color-bg-base: 222 33% 4%;
+    --color-bg-surface-1: 220 28% 7%;
+    --color-bg-surface-2: 222 25% 10%;
+    --color-bg-elevated: 220 22% 14%;
+    --color-bg-terminal: 220 30% 3%;
+    
+    /* Border language - soft to strong hierarchy */
+    --color-border-soft: 218 22% 18%;
+    --color-border-strong: 218 25% 28%;
+    --color-border-glow: 207 100% 50% / 0.5;
+    
+    /* Text hierarchy */
+    --color-text-primary: 220 50% 94%;
+    --color-text-secondary: 220 22% 68%;
+    --color-text-muted: 222 15% 50%;
+    --color-text-terminal: 150 80% 55%;
+    
+    /* Brand - cyberpunk neon palette */
+    --color-brand-primary: 207 100% 54%;
+    --color-brand-primary-hover: 207 100% 64%;
+    --color-brand-accent: 168 100% 42%;
+    --color-brand-secondary: 280 100% 65%;
+    --color-brand-tertiary: 190 100% 55%;
+    
+    /* Status colors - high contrast for readability */
+    --color-success: 150 75% 50%;
+    --color-success-muted: 150 60% 35%;
+    --color-warning: 38 100% 58%;
+    --color-warning-muted: 38 60% 40%;
+    --color-danger: 353 85% 62%;
+    --color-danger-muted: 353 60% 45%;
+    --color-info: 207 80% 60%;
+    --color-info-muted: 207 50% 45%;
+    
+    /* Focus and interactive */
+    --color-focus-ring: 207 100% 70%;
+    
+    /* Hero/landing effects */
+    --color-hero-grid: 207 100% 54% / 0.15;
+    --color-hero-glow: 168 100% 42% / 0.2;
+    --color-hero-danger-pulse: 353 85% 62% / 0.15;
+    --color-hero-scanline: 207 100% 54% / 0.03;
+    
+    /* Terminal-specific effects */
+    --color-terminal-green: 150 85% 55%;
+    --color-terminal-cyan: 185 80% 55%;
+    --color-terminal-magenta: 280 75% 65%;
+    --color-terminal-yellow: 50 90% 60%;
+    --color-terminal-orange: 25 90% 55%;
+    
+    /* Glow effects */
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-md: 0 8px 24px rgba(0,0,0,0.28);
+    --shadow-lg: 0 14px 38px rgba(0,0,0,0.36);
+    --shadow-glow-brand: 0 0 20px rgba(56, 189, 248, 0.3);
+    --shadow-glow-accent: 0 0 20px rgba(52, 211, 153, 0.3);
+    --shadow-glow-terminal: 0 0 15px rgba(34, 197, 94, 0.25);
+    --shadow-glow-danger: 0 0 15px rgba(239, 68, 68, 0.25);
 
     /* Map to shadcn tokens */
     --background: var(--color-bg-base);
@@ -136,4 +168,191 @@
 @keyframes pulse-ring {
   0% { transform: scale(0.8); opacity: 1; }
   100% { transform: scale(1.4); opacity: 0; }
+}
+
+/* Cyberpunk Terminal Effects */
+@keyframes terminal-cursor-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+@keyframes matrix-rain {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+@keyframes border-glow {
+  0%, 100% { border-color: hsl(var(--color-brand-primary) / 0.3); box-shadow: 0 0 5px hsl(var(--color-brand-primary) / 0.2); }
+  50% { border-color: hsl(var(--color-brand-primary) / 0.6); box-shadow: 0 0 15px hsl(var(--color-brand-primary) / 0.4); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes data-stream {
+  0% { background-position: 0% 0; }
+  100% { background-position: 100% 100%; }
+}
+
+/* Terminal cursor effect */
+.terminal-cursor::after {
+  content: '_';
+  animation: terminal-cursor-blink 1s step-end infinite;
+}
+
+/* Glitch text effect */
+.glitch-text {
+  position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.glitch-text::before {
+  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+  color: hsl(var(--color-terminal-cyan));
+  z-index: -1;
+}
+
+.glitch-text::after {
+  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) reverse both infinite;
+  color: hsl(var(--color-terminal-magenta));
+  z-index: -2;
+}
+
+/* Scanline overlay */
+.scanline-overlay {
+  position: relative;
+}
+
+.scanline-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    hsl(var(--color-hero-scanline)) 2px,
+    hsl(var(--color-hero-scanline)) 4px
+  );
+  pointer-events: none;
+  opacity: 0.3;
+}
+
+/* Grid background */
+.cyber-grid {
+  background-image: 
+    linear-gradient(hsl(var(--color-hero-grid)) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(var(--color-hero-grid)) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Terminal panel */
+.terminal-panel {
+  background: hsl(var(--color-bg-terminal));
+  border: 1px solid hsl(var(--color-border-soft));
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.terminal-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: hsl(var(--color-bg-surface-2));
+  border-bottom: 1px solid hsl(var(--color-border-soft));
+  border-radius: 4px 4px 0 0;
+}
+
+/* Glowing border effect */
+.glow-border {
+  position: relative;
+}
+
+.glow-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(45deg, hsl(var(--color-brand-primary)), hsl(var(--color-brand-accent)), hsl(var(--color-brand-primary)));
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-border:hover::before {
+  opacity: 0.5;
+}
+
+/* Neon text */
+.neon-text {
+  text-shadow: 
+    0 0 5px hsl(var(--color-brand-primary) / 0.5),
+    0 0 10px hsl(var(--color-brand-primary) / 0.3),
+    0 0 20px hsl(var(--color-brand-primary) / 0.2);
+}
+
+.neon-text-green {
+  text-shadow: 
+    0 0 5px hsl(var(--color-terminal-green) / 0.5),
+    0 0 10px hsl(var(--color-terminal-green) / 0.3),
+    0 0 20px hsl(var(--color-terminal-green) / 0.2);
+}
+
+/* Data stream background */
+.data-stream-bg {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--color-bg-terminal)) 0%,
+    hsl(var(--color-bg-surface-1)) 50%,
+    hsl(var(--color-bg-terminal)) 100%
+  );
+  background-size: 400% 400%;
+  animation: data-stream 15s ease infinite;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

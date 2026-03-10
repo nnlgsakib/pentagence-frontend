@@ -137,13 +137,21 @@ export default function SessionDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/app/sessions"><ArrowLeft className="h-4 w-4" /></Link>
         </Button>
         <div className="min-w-0 flex-1">
-          <h1 className="truncate font-heading text-xl font-bold text-foreground">{session.repo_ref || session.id}</h1>
-          <p className="truncate text-sm text-pen-text-muted">{session.target_url}</p>
+          <div className="flex items-center gap-2">
+            <h1 className="truncate font-heading text-xl font-bold text-pen-text-primary font-mono">{session.repo_ref || session.id}</h1>
+            <div className={`w-2 h-2 rounded-full ${
+              session.status === 'running' ? 'bg-terminal-green animate-pulse' :
+              session.status === 'completed' ? 'bg-terminal-green' :
+              session.status === 'failed' ? 'bg-pen-danger' : 'bg-pen-warning'
+            }`} />
+          </div>
+          <p className="truncate text-sm text-pen-text-muted font-mono">{session.target_url}</p>
         </div>
         <StatusPill status={session.status}>{session.status}</StatusPill>
         {canCancel && (
@@ -153,39 +161,49 @@ export default function SessionDetailPage() {
         )}
       </div>
 
+      {/* Status Pipeline */}
       <div className="flex items-center gap-1 overflow-x-auto pb-2">
         {statuses.map((status, index) => (
           <div key={status} className="flex items-center">
-            <div className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium ${
+            <div className={`whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-mono transition-all ${
               index <= currentStep
                 ? session.status === "failed" && index === currentStep
-                  ? "bg-pen-danger/10 text-pen-danger"
-                  : "bg-pen-brand/10 text-pen-brand"
-                : "bg-pen-elevated text-pen-text-muted"
+                  ? "bg-pen-danger/20 text-pen-danger border border-pen-danger/30"
+                  : "bg-terminal-green/10 text-terminal-green border border-terminal-green/30"
+                : "bg-pen-surface2 text-pen-text-muted border border-pen-border-soft"
             }`}>
               {status}
             </div>
-            {index < statuses.length - 1 && <div className={`mx-1 h-px w-6 ${index < currentStep ? "bg-pen-brand/40" : "bg-pen-border-soft"}`} />}
+            {index < statuses.length - 1 && <div className={`mx-1 h-px w-6 ${index < currentStep ? "bg-terminal-green/40" : "bg-pen-border-soft"}`} />}
           </div>
         ))}
       </div>
 
+      {/* Info Cards */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><GitBranch className="h-3 w-3" /> Repository</div>
-          <p className="text-sm font-medium text-foreground">{session.repo_ref}</p>
+        <div className="rounded-lg border border-pen-border-soft bg-pen-surface1 p-4 hover:border-pen-brand/30 transition-colors">
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted font-mono">
+            <GitBranch className="h-3 w-3 text-pen-brand" /> Repository
+          </div>
+          <p className="text-sm font-mono text-pen-text-primary truncate">{session.repo_ref}</p>
         </div>
-        <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><ExternalLink className="h-3 w-3" /> Target</div>
-          <p className="truncate text-sm font-medium text-foreground">{session.target_url}</p>
+        <div className="rounded-lg border border-pen-border-soft bg-pen-surface1 p-4 hover:border-pen-brand/30 transition-colors">
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted font-mono">
+            <ExternalLink className="h-3 w-3 text-terminal-cyan" /> Target
+          </div>
+          <p className="truncate text-sm font-mono text-pen-text-primary">{session.target_url}</p>
         </div>
-        <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><Clock className="h-3 w-3" /> Duration</div>
-          <p className="text-sm font-medium text-foreground">{duration}</p>
+        <div className="rounded-lg border border-pen-border-soft bg-pen-surface1 p-4 hover:border-pen-brand/30 transition-colors">
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted font-mono">
+            <Clock className="h-3 w-3 text-pen-warning" /> Duration
+          </div>
+          <p className="text-sm font-mono text-pen-text-primary">{duration}</p>
         </div>
-        <div className="rounded-lg border border-pen-border-soft bg-card p-4">
-          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted"><ShieldCheck className="h-3 w-3" /> Cleanup</div>
-          <p className="text-sm font-medium text-foreground">{session.cleanup_status}</p>
+        <div className="rounded-lg border border-pen-border-soft bg-pen-surface1 p-4 hover:border-pen-brand/30 transition-colors">
+          <div className="mb-1 flex items-center gap-2 text-xs text-pen-text-muted font-mono">
+            <ShieldCheck className="h-3 w-3 text-terminal-green" /> Cleanup
+          </div>
+          <p className="text-sm font-mono text-pen-text-primary">{session.cleanup_status}</p>
         </div>
       </div>
 

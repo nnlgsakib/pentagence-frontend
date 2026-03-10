@@ -2,7 +2,7 @@ import { Link, useLocation } from "react-router-dom";
 import { AppLogo } from "@/components/AppLogo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Terminal } from "lucide-react";
 import { useState } from "react";
 
 const navLinks = [
@@ -20,9 +20,18 @@ export function TopNav() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-pen-border-soft bg-pen-base/80 backdrop-blur-xl">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-pen-border-soft/50 bg-pen-base/90 backdrop-blur-xl">
+      {/* Glow line at top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-pen-brand/50 to-transparent" />
+      
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <AppLogo />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <AppLogo />
+            {/* Status indicator */}
+            <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-terminal-green animate-pulse shadow-[0_0_6px_hsl(var(--color-terminal-green))]" />
+          </div>
+        </div>
         
         {/* Desktop nav */}
         <div className="hidden md:flex items-center gap-1">
@@ -30,10 +39,10 @@ export function TopNav() {
             <Link
               key={link.href}
               to={link.href}
-              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
                 location.pathname === link.href
-                  ? "text-foreground bg-pen-elevated"
-                  : "text-pen-text-secondary hover:text-foreground hover:bg-pen-elevated/50"
+                  ? "text-pen-brand bg-pen-brand/10 border border-pen-brand/20 shadow-[0_0_10px_hsl(var(--color-brand-primary)_/_0.15)]"
+                  : "text-pen-text-secondary hover:text-pen-text-primary hover:bg-pen-surface2 border border-transparent"
               }`}
             >
               {link.label}
@@ -43,15 +52,17 @@ export function TopNav() {
 
         <div className="hidden md:flex items-center gap-3">
           {isAuthenticated ? (
-            <Button asChild size="sm">
-              <Link to="/app">Dashboard</Link>
+            <Button asChild size="sm" variant="default">
+              <Link to="/app">
+                <Terminal className="h-3 w-3 mr-1.5" /> Dashboard
+              </Link>
             </Button>
           ) : (
             <>
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/auth/login">Sign In</Link>
               </Button>
-              <Button size="sm" asChild>
+              <Button size="sm" variant="default" asChild>
                 <Link to="/auth/register">Get Started</Link>
               </Button>
             </>
@@ -59,20 +70,20 @@ export function TopNav() {
         </div>
 
         {/* Mobile toggle */}
-        <button className="md:hidden p-2 text-pen-text-secondary" onClick={() => setMobileOpen(!mobileOpen)}>
+        <button className="md:hidden p-2 text-pen-text-secondary hover:text-pen-text-primary" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-pen-border-soft bg-pen-surface1 p-4 space-y-2">
+        <div className="md:hidden border-t border-pen-border-soft/50 bg-pen-surface1/95 backdrop-blur-xl p-4 space-y-2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               onClick={() => setMobileOpen(false)}
-              className="block px-3 py-2 text-sm text-pen-text-secondary hover:text-foreground rounded-md hover:bg-pen-elevated/50"
+              className="block px-3 py-2.5 text-sm font-medium text-pen-text-secondary hover:text-pen-text-primary rounded-md hover:bg-pen-surface2 border border-transparent hover:border-pen-border-soft transition-all"
             >
               {link.label}
             </Link>
