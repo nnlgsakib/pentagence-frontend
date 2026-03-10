@@ -145,6 +145,6 @@ describe("SessionDetailPage", () => {
     renderPage();
 
     expect(await screen.findByText("AI summary unavailable for this run")).toBeInTheDocument();
-    expect(screen.getByText("provider timeout")).toBeInTheDocument();
+    expect(screen.getByText(/manual retries used/i)).toBeInTheDocument();
   });
 });

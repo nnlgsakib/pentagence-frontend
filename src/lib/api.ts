@@ -87,6 +87,27 @@ export interface SessionArtifact {
   created_at: string;
 }
 
+export interface DashboardRecentSession {
+  id: string;
+  repo_ref: string;
+  target_url: string;
+  status: SessionRecord["status"];
+  created_at: string;
+  ended_at: string | null;
+}
+
+export interface DashboardSummary {
+  total_runs: number;
+  active_runs: number;
+  completed_runs: number;
+  failed_runs: number;
+  completion_rate: number;
+  last_run_at: string | null;
+  recent_sessions: DashboardRecentSession[];
+  has_any_sessions: boolean;
+  needs_attention_runs: number;
+}
+
 export interface AdminSessionRecord extends SessionRecord {
   user_id: string;
 }
@@ -375,6 +396,12 @@ export const authApi = {
     return payload.user;
   },
 
+  googleLoginUrl(intent: "login" | "register" = "login"): string {
+    const base = runtimeConfig.apiBaseUrl || window.location.origin;
+    const normalizedBase = base.replace(/\/+$/, "");
+    return `${normalizedBase}/v1/auth/google/start?intent=${intent}`;
+  },
+
   async logout(): Promise<void> {
     const refreshToken = getRefreshToken();
     if (refreshToken) {
@@ -409,6 +436,10 @@ export const sessionApi = {
   async get(id: string): Promise<SessionRecord> {
     const payload = await apiRequest<{ session: SessionRecord }>(`/v1/sessions/${id}`);
     return payload.session;
+  },
+
+  async dashboardSummary(): Promise<{ summary: DashboardSummary; google_auth_enabled: boolean }> {
+    return apiRequest<{ summary: DashboardSummary; google_auth_enabled: boolean }>("/v1/sessions/dashboard-summary");
   },
 
   async create(input: { repoRef: string; targetUrl: string; idempotencyKey?: string }): Promise<SessionRecord> {

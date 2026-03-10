@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useState } from "react";
-import { ApiError } from "@/lib/api";
+import { ApiError, authApi } from "@/lib/api";
+import { runtimeConfig } from "@/lib/runtime-config";
+import { ArrowRight, LockKeyhole, Mail } from "lucide-react";
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -31,33 +33,73 @@ export default function LoginPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = authApi.googleLoginUrl("login");
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <div className="flex justify-center mb-4"><AppLogo /></div>
-        <h1 className="font-heading text-2xl font-bold text-foreground">Welcome back</h1>
-        <p className="text-sm text-pen-text-muted mt-1">Sign in to your Pentagence account</p>
+        <div className="mb-4 flex justify-center"><AppLogo /></div>
+        <h1 className="font-heading text-3xl font-bold text-foreground">Welcome back</h1>
+        <p className="mt-2 text-sm text-pen-text-muted">Sign in to access your security workspace, recent runs, and reporting history.</p>
       </div>
-      <form onSubmit={handleSubmit} className="space-y-4 bg-pen-surface1 border border-pen-border-soft rounded-xl p-6">
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Email</label>
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
+      <div className="rounded-2xl border border-pen-border-soft bg-card/90 p-6 shadow-pen-md">
+        <div className="mb-5 grid gap-3 rounded-2xl border border-pen-border-soft bg-pen-elevated/30 p-4 text-left sm:grid-cols-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Run visibility</p>
+            <p className="mt-1 text-sm text-foreground">Execution logs, reports, and artifacts remain associated with your account.</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Secure access</p>
+            <p className="mt-1 text-sm text-foreground">Session handling follows the same short-lived token and refresh protections across sign-in methods.</p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-pen-text-muted">Operational focus</p>
+            <p className="mt-1 text-sm text-foreground">Recent activity and exceptions are available as soon as you enter the dashboard.</p>
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-foreground mb-1.5">Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full rounded-lg border border-pen-border-soft bg-pen-surface2 px-3 py-2 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none focus:ring-2 focus:ring-pen-brand/50" />
-        </div>
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm text-pen-text-muted">
-            <input type="checkbox" className="rounded border-pen-border-soft" /> Remember me
-          </label>
-          <Link to="/auth/forgot-password" className="text-sm text-pen-brand hover:text-pen-brand-hover">Forgot password?</Link>
-        </div>
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing in..." : "Sign In"}
-        </Button>
-        {error && <p className="text-sm text-pen-danger">{error}</p>}
-      </form>
+
+        {runtimeConfig.googleAuthEnabled && (
+          <>
+            <Button type="button" variant="outline" className="mb-4 w-full justify-center rounded-xl border-pen-border-soft bg-background/70" onClick={handleGoogleLogin}>
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-pen-border-soft text-xs font-semibold">G</span>
+              Continue with Google
+            </Button>
+            <div className="mb-4 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-pen-text-muted">
+              <span className="h-px flex-1 bg-pen-border-soft" />
+              or sign in with email
+              <span className="h-px flex-1 bg-pen-border-soft" />
+            </div>
+          </>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Email</label>
+            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
+              <Mail className="h-4 w-4 text-pen-text-muted" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@company.com" className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" />
+            </div>
+          </div>
+          <div>
+            <div className="mb-1.5 flex items-center justify-between">
+              <label className="block text-sm font-medium text-foreground">Password</label>
+              <Link to="/auth/forgot-password" className="text-sm text-pen-brand hover:text-pen-brand-hover">Forgot password?</Link>
+            </div>
+            <div className="flex items-center rounded-xl border border-pen-border-soft bg-pen-surface2 px-3 focus-within:ring-2 focus-within:ring-pen-brand/40">
+              <LockKeyhole className="h-4 w-4 text-pen-text-muted" />
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="Enter your password" className="w-full bg-transparent px-3 py-3 text-sm text-foreground placeholder:text-pen-text-muted focus:outline-none" />
+            </div>
+          </div>
+          {error && <p className="rounded-lg border border-pen-danger/30 bg-pen-danger/5 px-3 py-2 text-sm text-pen-danger">{error}</p>}
+          <Button type="submit" className="w-full rounded-xl" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
+            {!loading && <ArrowRight className="h-4 w-4" />}
+          </Button>
+          <p className="text-xs text-pen-text-muted">Use your Pentagence credentials or Google SSO when it is enabled for this environment.</p>
+        </form>
+      </div>
       <p className="text-center text-sm text-pen-text-muted">
         Don't have an account? <Link to="/auth/register" className="text-pen-brand hover:text-pen-brand-hover">Sign up</Link>
       </p>

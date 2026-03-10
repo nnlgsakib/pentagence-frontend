@@ -5,6 +5,7 @@ export interface RuntimeConfig {
   wsBaseUrl: string;
   runtimeMode: RuntimeMode;
   useDevProxy: boolean;
+  googleAuthEnabled: boolean;
 }
 
 function isLocalOrigin(urlValue: string): boolean {
@@ -73,5 +74,6 @@ export const runtimeConfig: RuntimeConfig = (() => {
     wsBaseUrl,
     runtimeMode,
     useDevProxy,
+    googleAuthEnabled: import.meta.env.VITE_GOOGLE_AUTH_ENABLED === "true",
   };
 })();

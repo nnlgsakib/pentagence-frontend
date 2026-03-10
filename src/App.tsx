@@ -24,6 +24,7 @@ import ContactPage from "@/pages/ContactPage";
 // Auth pages
 import LoginPage from "@/pages/auth/LoginPage";
 import RegisterPage from "@/pages/auth/RegisterPage";
+import GoogleAuthCallbackPage from "@/pages/auth/GoogleAuthCallbackPage";
 import ForgotPasswordPage from "@/pages/auth/ForgotPasswordPage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 
@@ -84,6 +85,7 @@ const App = () => (
             <Route element={<RequireGuest><AuthLayout /></RequireGuest>}>
               <Route path="/auth/login" element={<LoginPage />} />
               <Route path="/auth/register" element={<RegisterPage />} />
+              <Route path="/auth/google/callback" element={<GoogleAuthCallbackPage />} />
               <Route path="/auth/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/auth/reset-password" element={<ResetPasswordPage />} />
             </Route>
