@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Shield, Zap, Eye, Lock, ArrowRight, Play, Terminal, Cpu, Scan, Skull } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
+import LightPillar from "@/components/LightPillar";
 
 const terminalLogs = [
   { type: "system", msg: "Initializing Pentagence kernel v2.4.1...", delay: 0 },
@@ -134,7 +135,25 @@ export default function LandingPage() {
 
       {/* Hero Section */}
       <section className="relative min-h-[95vh] flex items-center justify-center overflow-hidden z-10">
-        <div className="container px-4 py-20">
+        {/* Light Pillar Background */}
+        <div className="absolute inset-0 pointer-events-none" style={{ background: 'black' }}>
+          <div className="absolute inset-0 w-full h-full">
+            <LightPillar
+              topColor="#29ff4c"
+              bottomColor="#9d2a99"
+              intensity={1}
+              rotationSpeed={0.3}
+              interactive={false}
+              glowAmount={0.002}
+              pillarWidth={3}
+              pillarHeight={0.4}
+              noiseIntensity={0.5}
+              pillarRotation={25}
+            />
+          </div>
+        </div>
+        
+        <div className="container px-4 py-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             {/* Left: Hero content */}
             <motion.div
